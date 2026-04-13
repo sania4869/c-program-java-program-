@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>第2回Webページコンテスト　C言語　問題A-1</title>
+  </head>
+  <body bgcolor="#e8f4ff">
+    <h1 id="title">第2回Webページコンテスト　C言語　問題A-1</h1>
+    
+    <span id="home"><a href="./index.html">⬆HOMEへ</a></span>
+    
+    <table class="menubar">
+      <tr>
+        <td class="menu"><a href="./A-1.html">C言語　問題A-1の解答</a></td>
+        <td class="menu"><a href="./A-2.html">C言語　問題A-2の解答</a></td>
+      </tr>
+      <tr>
+        <td class="menu"><a href="./B.html">C言語　問題Bの解答</a></td>
+	<td class="menu"><a href="./C.html">C言語　問題Cの解答</a></td>
+      </tr>
+      <tr>
+        <td class="menu"><a href="./detail.html">Webページを作成する際に注意した点</a></td>
+        <td class="menu"><a href="./character.html">C言語の特徴</a></td>
+      </tr>
+    </table>
+    
+    <hr>
+    
+    <table border="1" width="80%" height="100" align="center" bgcolor="white">
+    
+      <tr>
+        <th colspan="2"><font size="5">C言語　問題A-1</font></th>
+        
+      </tr> 
+      
+      <tr>
+        <td colspan="2"> 
+          <p>[問題]</p>
+          <p>次の行列の積に関するプログラムで使われるメソッドを JAVA 言語で作成せよ.</p>
+          <p>このプログラムは, 要素として int 型の値を持つ 3 × 3 行列に関する操作を行っ ている.</p>
+          <p>2 つのメソッド, メソッド matAvrDiagElements とメソッド mat4thPower のみ作成せよ. メソッド matProduct は作成済みとする.</p>
+          <p>メソッド matAvrDiagElements は, 第 1 引数の行列からその行列の対角要素 (3 個の要素) の平均値を求めて返り値として返す.</p>
+          <p>メソッド matProduct は, 第 1 引数の行列 (A) と第 2 引数の行列 (B) の積 (AB) の結果を第 3 引数の行列に格納する.</p>
+          <p>メソッド mat4thPower は, 第 1 引数の行列を 4 乗した結果を第 2 引数の行列に格納する. なお, 必要であれば, これら 3 つのメソッドはお互いに内部で使用しても構わない.</p>
+          <p>ただし, 作成するメソッドはメインメソッド内に示されている行列の各要素の値が変わっても, 正しく動作するように作成すること.</p>
+         
+        </td> 
+      </tr>
+      
+      <tr>
+        <td colspan="2">
+          <pre>
+            <p>[画面出力]</p>
+              5.0
+              30 24 18
+              84 69 54
+              138 114 90
+              7560 9288 11016
+              17118 21033 24948
+              26676 32778 38880
+          </pre>    
+        </td>  
+      </tr>
+      
+      <tr height="20%">
+         <td width="50%" align="center"><font size="4">解答</font></td>
+         <td width="50%" align="center"><font size="4">解説</font></td>
+      </tr>  
+       
+         <td>
+           <pre>
+           
+  1 #include <stdio.h>
+  2 
+  3 double matAvrDiagElements(int a[3][3]);
+  4 void matProduct(int a[3][3], int b[3][3], int c[3][3]);
+  5 void mat4thPower(int a[3][3], int d[3][3]);
+  6 
+  7 int main(int arc, char *argv[]) {
+  8     int a[3][3] = {{1,2,3}, {4,5,6}, {7,8,9}};
+  9     int b[3][3] = {{9,8,7}, {6,5,4}, {3,2,1}};
+ 10     double av;
+ 11     int c[3][3], d[3][3];
+ 12     int i, j;
+ 13 
+ 14     av = matAvrDiagElements(a);
+ 15     printf("average of diagonal elements = %f\n", av);
+ 16 
+ 17     matProduct(a, b, c);
+ 18     for (i = 0; i < 3; i++) {
+ 19         for (j = 0; j < 3; j++) {
+ 20             printf("%d\t", c[i][j]);
+ 21         }
+ 22         printf("\n");
+ 23     }
+ 24 
+ 25     mat4thPower(a, d);
+ 26     for (i = 0; i < 3; i++) {
+ 27         for (j = 0; j < 3; j++) {
+ 28             printf("%d\t", d[i][j]);
+ 29         }
+ 30         printf("\n");
+ 31     }
+ 32 
+ 33     return 0;
+ 34 }
+ 35 
+ 36 
+ 37 /* --- 対角成分の平均値 --- */
+ 38 double matAvrDiagElements(int a[3][3]) {
+ 39     double sum = 0.0;
+ 40     int i;
+ 41     for (i = 0; i < 3; i++) {
+ 42         sum += a[i][i];
+ 43     }
+ 44     return sum / 3.0;
+ 45 }
+ 46 
+ 47 
+ 48 /* --- 行列積 C = A × B --- */
+ 49 void matProduct(int a[3][3], int b[3][3], int c[3][3]) {
+ 50     int i, j, k;
+ 51     for (i = 0; i < 3; i++) {
+ 52         for (j = 0; j < 3; j++) {
+ 53             c[i][j] = 0;
+ 54             for (k = 0; k < 3; k++) {
+ 55                 c[i][j] += a[i][k] * b[k][j];
+ 56             }
+ 57         }
+ 58     }
+ 59 }
+ 60 
+ 61 
+ 62 /* --- 4乗行列 D = A^4 --- */
+ 63 void mat4thPower(int a[3][3], int d[3][3]) {
+ 64     int temp1[3][3];
+ 65     matProduct(a, a, temp1);   // A^2
+ 66     matProduct(temp1, temp1, d); // (A^2)^2 = A^4
+ 67 }
+           
+           </pre>
+         </td>
+      
+         <td>
+           <pre>
+           
+1行目：
+stdio.h をインクルードして標準入出力関数を使えるようにしている。
+
+3〜5行目：
+行列の対角平均、行列積、4乗行列を求める関数のプロトタイプ宣言を行っている。
+
+7〜20行目：
+main 関数の開始部分で、2つの 3×3 行列 a と b を初期化し、結果格納用行列 c と d、およびループ変数 i, j を宣言している。
+
+22行目：
+matAvrDiagElements を呼び出して行列 a の対角成分の平均値を求め、av に代入している。
+
+23行目：
+求めた平均値を printf で表示している。
+
+25行目：
+matProduct を呼び出し、行列 a と b の積 c を計算している。
+
+26〜30行目：
+3 重ループで計算結果 c の各要素を行ごとに表示している。
+
+32行目：
+mat4thPower を呼び出し、行列 a の 4 乗行列 d を計算している。
+
+33〜37行目：
+行列 d の各要素を行ごとに表示している。
+
+40〜48行目：
+matAvrDiagElements 関数は行列の対角要素 a[0][0], a[1][1], a[2][2] を合計し、その平均値を返す。
+
+51〜66行目：
+matProduct 関数は行列 a と b の積 c を 3 重ループで計算している。c[i][j] に a[i][k] と b[k][j] の積の総和を入れている。
+
+69〜79行目：
+mat4thPower 関数ではまず temp1 に A² を計算し、それをもう一度自分自身と掛けることで A⁴ を求め、結果を d に格納している。
+
+
+           
+           </pre>  
+         </td>
+         
+       </font></tr>        
+     </table>
+     
+     <p id="topbutton"><a href="#top">⬆TOPへ</a></p>
+    
+    <span id="home"><a href="./index.html">⬆HOMEへ</a></span>
+     
+   </body>
+</html>               

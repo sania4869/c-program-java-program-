@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>第2回Webページコンテスト　C言語　問題B</title>
+  </head>
+  <body bgcolor="#e8f4ff">
+    <h1 id="title">第2回Webページコンテスト　C言語　問題B</h1>
+    
+    <span id="home"><a href="./index.html">⬆HOMEへ</a></span>
+    
+    <table class="menubar">
+      <tr>
+        <td class="menu"><a href="./A-1.html">C言語　問題A-1の解答</a></td>
+        <td class="menu"><a href="./A-2.html">C言語　問題A-2の解答</a></td>
+      </tr>
+      <tr>
+        <td class="menu"><a href="./B.html">C言語　問題Bの解答</a></td>
+	<td class="menu"><a href="./C.html">C言語　問題Cの解答</a></td>
+      </tr>
+      <tr>
+        <td class="menu"><a href="./detail.html">Webページを作成する際に注意した点</a></td>
+        <td class="menu"><a href="./character.html">C言語の特徴</a></td>
+      </tr>
+    </table>
+    
+    <hr>
+    
+    <table border="1" width="80%" height="100" align="center" bgcolor="white">
+    
+      <tr>
+        <th colspan="2"><font size="5">C言語　問題B</font></th>
+        
+      </tr> 
+      
+      <tr>
+        <td colspan="2"> 
+          <p>[問題]</p>
+          <p>次のリスト構造から指定した要素を削除する関数delLLとdelLFをC言語で作成せよ.空欄に当てはまるものを書きなさい.</p>
+          <p> delLLとdelLFは下記のmain関数において,4つの要素(p1,p2,p3,そして,p4)からなるリスト構造から2個の要素(p4とp1)を,それぞれ,リスト構造の末尾と先頭から削除する.画面表示も示す.空欄はセミコロンを含まない.この問題ではメモリ解放のためのfreeを行う必要はない.</p>
+          
+          <img src="C1.png" width="500" height="auto" align="center">
+          
+        </td> 
+        
+      </tr>
+      
+      <tr>
+        <td colspan="2">
+          <pre>
+          <p>[画面表示]</p>
+Labels: G-L
+         
+          </pre>  
+        </td>  
+      </tr>
+      
+      <tr>
+        <td colspan="2">
+          <pre>
+          <p>[解答例]</p>
+          空欄1 head->next != NULL
+	  空欄2 head->next = NULL
+	  空欄3 head->next = head->next->next
+          
+          </pre>
+        </td>
+      </tr>    
+      
+      <tr height="20%">
+         <td width="50%" align="center"><font size="4">解答</font></td>
+         <td width="50%" align="center"><font size="4">解説</font></td>
+       </tr>
+       
+         <td>
+           <pre>
+
+	    1  #include <stdio.h>
+            2  #include <stdlib.h>
+            3
+            4  typedef struct dummy_list {
+            5      char label;
+            6      struct dummy_list *next;
+            7  } LIST;
+            8
+            9  void dispL(LIST *head){
+           10      if(head->next != NULL) {
+           11          printf("%c-", head->label);
+           12          dispL(head->next);
+           13      } else {
+           14          printf("%c", head->label);
+           15          return;
+           16      }
+           17  }
+           18
+           19  void delLL(LIST *head){
+           20      if(head->next->next != NULL) {
+           21          delLL(head->next);
+           22      } else {
+           23          head->next = NULL;
+           24          return;
+           25      }
+           26  }
+           27
+           28  void delLF(LIST *head){
+           29      if(head->next != NULL){
+           30          head->next = head->next->next;
+           31      }
+           32  }
+           33
+           34  int main(void){
+           35      LIST aa0 = {' ', NULL};
+           36      LIST aa1 = {'A', NULL};
+           37      LIST aa2 = {'G', NULL};
+           38      LIST aa3 = {'L', NULL};
+           39      LIST aa4 = {'M', NULL};
+           40
+           41      LIST *head, *p1, *p2, *p3, *p4;
+           42      head = &aa0; p1 = &aa1; p2 = &aa2; p3 = &aa3; p4 = &aa4;
+           43
+           44      head->next = p1;
+           45      p1->next = p2;
+           46      p2->next = p3;
+           47      p3->next = p4;
+           48
+           49      delLL(head);  // 末尾削除 → M削除
+           50      delLF(head);  // 先頭削除 → A削除
+           51
+           52      printf("Labels: ");
+           53      dispL(head->next);
+           54      return 0;
+           55  }  
+          
+          
+           </pre>
+         </td>
+      
+         <td>
+           <pre>
+           
+7〜8行目、
+LIST という構造体型を定義しており、各ノードは char 型の label と
+次のノードを指す LIST* next をメンバとして持つ。
+これにより 1文字のデータと次の要素へのポインタを持つ連結リストを
+構築できる。
+
+9〜17行目、
+dispL 関数では、引数として受け取った head の指すノードの内容を
+再帰的に表示する。まず head->next が NULL でない場合は末尾ではないため、
+現在の label を printf で表示し、その後 dispL を head->next を渡して
+再帰的に呼び出す。head->next が NULL の場合はそのノードが末尾であるため、
+ハイフンなしで label を表示してから return し、再帰呼び出しから
+順に戻っていく仕組みになっている。
+
+19〜26行目、
+delLL 関数はリストの末尾ノードを削除するための処理を行う。
+head->next->next を調べることで、自分の次のノードが末尾かどうかを
+判定している。もし head->next->next が NULL でなければ末尾ではないため、
+さらに次のノードを引数にして delLL を再帰呼び出しする。
+head->next->next が NULL の場合は head->next が末尾要素であると判断し、
+そのポインタを NULL に変更することで末尾を切り離して削除している。
+実装では free は行っていないが、ここでは末尾を「無効化する」という意味の
+削除操作を行っている。
+
+28〜32行目、
+delLF 関数は先頭の次のノード、つまりリストの先頭要素を1つ削除する機能を持つ。
+head->next が存在する場合に限り、head->next = head->next->next とすることで、
+1番目のノードを飛ばして2番目のノードへつなぎ直している。この操作によって、
+元の1番目の要素はリストから切り離され、先頭が1つ後ろへ移動する。
+
+34〜41行目、
+main 関数ではまず LIST 型の変数 aa0〜aa4 を宣言し、それぞれのノードに
+label と next を初期化している。続いて head, p1〜p4 という LIST* 型の
+ポインタ変数を宣言し、これらに aa0〜aa4 のアドレスを代入することで、
+各ノードを指すポインタを準備している。
+
+44〜48行目、
+準備したポインタを利用して連結リストを構築していく。
+head->next = p1 によりダミーの先頭 aa0 の次を aa1 にし、
+続いて p1->next = p2、p2->next = p3、p3->next = p4 を行うことで、
+A→G→L→M の順にノードがつながったリストが完成する。
+
+49行目、
+delLL(head) を実行することで末尾削除関数が呼び出され、
+リストの最後にある M のノードを切り離し、A→G→L となる。
+先頭（ダミーノード）はデータとして数えない。
+
+50行目、
+次に delLF(head) を実行することで先頭のデータノードを削除し、
+A のノードが外されて G→L の2つのノードからなるリストに変化する。
+
+52〜54行目、
+文字列
+          
+           </pre>
+         </td>
+         
+       </font></tr>        
+     </table> 
+     
+     <p id="topbutton"><a href="#top">⬆TOPへ</a></p>
+     
+     <span id="home"><a href="./index.html">⬆HOMEへ</a></span>
+    
+    </body>
+</html>                  
+  

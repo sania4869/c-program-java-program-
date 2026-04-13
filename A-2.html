@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>第2回Webページコンテスト　C言語　問題C</title>
+  </head>
+  <body bgcolor="#e8f4ff">
+    <h1 id="title">第2回Webページコンテスト　C言語　問題C</h1>
+    
+    <span id="home"><a href="./index.html">⬆HOMEへ</a></span>
+    
+    <table class="menubar">
+      <tr>
+        <td class="menu"><a href="./A-1.html">C言語　問題A-1の解答</a></td>
+        <td class="menu"><a href="./A-2.html">C言語　問題A-2の解答</a></td>
+      </tr>
+      <tr>
+        <td class="menu"><a href="./B.html">C言語　問題Bの解答</a></td>
+	<td class="menu"><a href="./C.html">C言語　問題Cの解答</a></td>
+      </tr>
+      <tr>
+        <td class="menu"><a href="./detail.html">Webページを作成する際に注意した点</a></td>
+        <td class="menu"><a href="./character.html">C言語の特徴</a></td>
+      </tr>
+    </table>
+    
+    <hr>
+    
+    <table border="1" width="80%" height="100" align="center" bgcolor="white">
+    
+      <tr>
+        <th colspan="2"><font size="5">C言語　問題C</font></th>
+        
+      </tr> 
+      
+      <tr>
+        <td colspan="2"> 
+          <p>[問題]</p>
+          <p>加速度 a から速度 v を計算する関数 intg1と, 加速度 a から位置 x を計算する関数 intg2をC言語で作成せよ (仮引数はすべて使うこと).時刻 t における位置 x, 速度 v, そして, 加速度 a の関係を, 今回の数値計算では次の式で近似する.</p>
+          <p>v(t + 1/2) = v(t − 1/2) + a(t),  x(t) = x(t − 1) + v(t − 1/2) .</p>
+          <p>空欄 4 から 11 に当てはまるものを書きなさい. ただし,x[0]=0,v[0]=1だとする.</p>
+          <p>次に,t = 0 の時の x の値と t = 1/2の時の v の値が main 関数の実行時引数により変わりうる場合, 時刻 t における位置 x を加速度から計算する関数 intgN2を (intg1を内部で呼び出して) 作成する際に必要な事項と注意点を箇条書きの文章で記述せよ.</p>
+          <p>intg1と inetg2は下記の main 関数において, 与えられた配列 a[]から, それぞれ, 配列 v[]と x[]を計算し第 3 引数の配列に代入する.ただし, 下の図のように x[t]は x(t) に, v[t]は v(t + 1/2) に, そして, a[t]はa(t + 1) に対応している.for の丸括弧内以外の空欄はセミコロンを含まない.</p>
+          
+          <img src="C1.png" width="500" height="auto" align="center">
+          
+        </td> 
+        
+      </tr>
+      
+      <tr>
+        <td colspan="2">
+          <pre>
+          <p>[画面表示]</p>
+            v [0]=1 , v [1]=7 , v [2]=19 , v [3]=37 , v [4]=61 , v [5]=91 , v [6]=127 , v [7]=169 , v [8]=217
+            x [0]=0 , x [1]=1 , x [2]=8 , x [3]=27 , x [4]=64 , x [5]=125 , x [6]=216 , x [7]=343 , x [8]=512 , x [9]=729
+            x [0]=0 , x [1]=1 , x [2]=8 , x [3]=27 , x [4]=64 , x [5]=125 , x [6]=216 , x [7]=343 , x [8]=512 , x [9]=729
+            ap [1]=6 , ap [2]=12 , ap [3]=18 , ap [4]=24 , ap [5]=30 , ap [6]=36 , ap [7]=42 , ap [8]=48　　
+         
+          </pre>  
+        </td>  
+      </tr>
+      
+      <tr>
+        <td colspan="2">
+          <pre>
+          <p>[解答例]</p>
+          空欄4  i=0; i&lt;n; i++
+          空欄5  v[i] + a[i]
+          空欄6  (int*)malloc(sizeof(int)*9)
+          空欄7  vdum[0] = 1
+          空欄8  x[0] = 0
+          空欄9  intg1 (9, vdum, x)
+          空欄10 v[0] = 1
+          空欄11 i=1; i<9; i++
+          空欄12 x[0] = 0
+          空欄13 i=1; i<10; i++
+          空欄14 ap = a-1
+          
+          </pre>
+        </td>
+      </tr>    
+      
+      <tr height="20%">
+         <td width="50%" align="center"><font size="4">解答</font></td>
+         <td width="50%" align="center"><font size="4">解説</font></td>
+       </tr>
+       
+         <td>
+           <pre>
+           
+           1 # include <stdio.h>
+           2 # include <stdlib.h>
+           3
+           4 void intg1 (int n, int a[], int v[]);
+           5 void intg2 (int n, int a[], int x[]);
+           6
+           7 void intg1 (int n, int a[], int v[]) {
+           8   int i;
+           9   for (i=0; i&lt;n; i++) { //空欄4
+          10     v[i+1] = v[i] + a[i]; //空欄5
+          11   }  
+          12 }
+          13
+          14 void intg2 (int n, int a[], int x[]) {
+          15   int *vdum ;
+          16   vdum = (int*)malloc(sizeof(int)*9); //空欄6
+          17   vdum[0] = 1; //空欄7
+          18   intg1 (n, a, vdum);
+          19   x[0] = 0; //空欄8
+          20   intg1 (9, vdum, x); //空欄9
+          21   free (vdum);
+          22 }
+          23
+          24 int main (void){
+          25   int i =0 , *ap ;
+          26   int x[10], v[9] ,a[8];
+          27    for (i=0; i<8; i++){
+          28      a[i]=6*(i+1);
+          29    }
+          30   v[0] = 1; //空欄10
+          31   intg1 (8, a, v);
+          32   printf ("v[%d]=%d", 0, v[0]);
+          33   for (i=1; i<9; i++) { //空欄11
+          34     printf (", v[%d]=%d", i, v[i]);
+          35   }
+          36   printf ("\n");
+          37   x[0] = 0; //空欄12
+          38   intg1 (9, v, x);
+          39   printf ("x[%d]=%d", 0, x[0]);
+          40   for (i=1; i<10; i++) { //空欄13
+          41     printf (", x[%d]=%d", i, x[i]);
+          42   }
+          43
+          44   printf ("\n");
+          45
+          46   intg2 (8, a, x);
+          47   printf ("x[%d]=%d", 0, x[0]);
+          48
+          49   for (i=1; i<10; i++){
+          50     printf (", x[%d]=%d", i, x[i]);
+          51   }
+          52   printf ("\n"); 
+          53  
+          54   ap = a-1; //空欄14
+          55   printf ("ap[%d]=%d", 1, ap[1]);
+          56   for (i=2; i<9; i++){
+          57     printf (", ap[%d]=%d", i, ap[i]);
+          58   }
+          59   printf("\n");
+          60 }  
+          
+           </pre>
+         </td>
+      
+         <td>
+           <pre>
+           
+           7~8行目、引数がint型の変数nとint型の配列aと配列vである関数intg1で変数iの宣言sと初期化を行う
+           9~11行目、問題文の公式を参考にfor文で配列vのi+1番目の値を求める計算をn回繰り返す
+           
+           14~16行目、引数がint型の変数nとint型の配列aと配列xである関数intg2でint型のポインタ変数vdumの宣言を行い、動的にメモリを確保する
+           17行目、問題文v[0]=1よりvdum[0]=1
+           18行目、intg1を呼び出して0~n番目までのvdumの値をaを使って求める
+           19行目、問題文x[0]=0よりx[0]=0
+           20行目、intg1を呼び出して0~9番目までのxの値をvdumを使って求める
+           21行目、free関数で開放する
+           
+           24~26行目、main関数内で変数iとポインタ変数apと要素数が10、9、8である配列x、v、aを準備する
+           27~29行目、iが0~8までの間、a[i]の値を求める
+           30行目、問題文よりv[0]=1
+           31~35行目、intg1を呼び出して引数8,a,vで実行し、配列vの先頭から9番目までを順に表示する
+           36行目、改行
+           37行目、問題文よりx[0]=0
+           38~42行目、intg1を呼び出して引数9,v,xで実行し、配列xの先頭から10番目までを順に表示する
+           44行目、改行
+           46~51行目、intg2を呼び出して引数8,a,xで実行し、配列xの先頭から10番目までを順に表示する
+           52行目、改行
+           54~58行目、apを配列aから1引いたものと定義することで値をずらすことができ、配列aの2番目から9番目までを順に表示する
+           59行目、改行
+          
+           </pre>
+         </td>
+         
+       </font></tr>        
+     </table> 
+     
+     <p id="topbutton"><a href="#top">⬆TOPへ</a></p>
+     
+     <span id="home"><a href="./index.html">⬆HOMEへ</a></span>
+    
+    </body>
+</html>                  
+  
