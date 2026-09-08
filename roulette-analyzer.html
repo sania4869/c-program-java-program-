@@ -268,6 +268,52 @@
   th:first-child,td:first-child{text-align:left;font-family:var(--font-body);}
   th{color:var(--sub);font-weight:700;font-size:0.72rem;letter-spacing:0.03em;text-transform:uppercase;}
   .scroll-x{overflow-x:auto;}
+
+  /* スマホ幅: 横スクロールさせず、表の各行を1枚のカードに組み替える */
+  @media (max-width:600px){
+    .scroll-x{overflow-x:visible;}
+    .scroll-x table{display:block;}
+    .scroll-x thead{display:none;}
+    .scroll-x tbody{display:block;}
+    .scroll-x tr{
+      display:block;
+      background:var(--panel2);
+      border:1px solid var(--border);
+      border-radius:8px;
+      padding:6px 10px;
+      margin-bottom:8px;
+    }
+    .scroll-x tr:last-child{margin-bottom:0;}
+    .scroll-x td{
+      display:flex;
+      justify-content:space-between;
+      align-items:baseline;
+      gap:14px;
+      padding:5px 0;
+      border-bottom:1px dashed var(--border);
+      text-align:right;
+      white-space:normal;
+    }
+    .scroll-x td:last-child{border-bottom:none;}
+    .scroll-x td::before{
+      content:attr(data-label);
+      flex:none;
+      text-align:left;
+      color:var(--sub);
+      font-family:var(--font-body);
+      font-size:0.68rem;
+      letter-spacing:0.02em;
+    }
+    .scroll-x td:first-child{
+      font-size:0.94rem;
+      font-weight:700;
+      color:var(--text);
+      padding-bottom:7px;
+      margin-bottom:3px;
+      border-bottom:1px solid var(--border);
+    }
+    .scroll-x td:first-child::before{content:none;}
+  }
   .dev-pos{color:var(--pocket-red-bright);}
   .dev-neg{color:#7fb8d8;}
 
@@ -586,10 +632,10 @@
   const chiTbody = document.querySelector('#chiTable tbody');
 
   function pct(x){ return (x*100).toFixed(2)+'%'; }
-  function devCell(devPts){
+  function devCell(devPts, label){
     const cls = devPts>0 ? 'dev-pos' : (devPts<0 ? 'dev-neg':'');
     const sign = devPts>0 ? '+' : '';
-    return '<td class="'+cls+'">'+sign+devPts.toFixed(2)+'</td>';
+    return '<td data-label="'+label+'" class="'+cls+'">'+sign+devPts.toFixed(2)+'</td>';
   }
 
   function computeCategoryCounts(list){
@@ -630,7 +676,7 @@
     function row(label, count, theoP){
       const rate = n>0 ? count/n : 0;
       const devPts = n>0 ? (rate-theoP)*100 : 0;
-      rows.push('<tr><td>'+label+'</td><td>'+count+'</td><td>'+(n>0?pct(rate):'-')+'</td><td>'+pct(theoP)+'</td>'+(n>0?devCell(devPts):'<td>-</td>')+'</tr>');
+      rows.push('<tr><td data-label="カテゴリ">'+label+'</td><td data-label="回数">'+count+'</td><td data-label="出現率">'+(n>0?pct(rate):'-')+'</td><td data-label="理論値">'+pct(theoP)+'</td>'+(n>0?devCell(devPts,'ズレ(pt)'):'<td data-label="ズレ(pt)">-</td>')+'</tr>');
     }
     row('赤', stats.color.red, 18/37);
     row('黒', stats.color.black, 18/37);
@@ -674,7 +720,7 @@
       const count = stats.sectors[key];
       const rate = n>0 ? count/n : 0;
       const devPts = n>0 ? (rate-theoP)*100 : 0;
-      html += '<tr><td>'+key+'</td><td>'+size+'個</td><td>'+count+'</td><td>'+(n>0?pct(rate):'-')+'</td><td>'+pct(theoP)+'</td>'+(n>0?devCell(devPts):'<td>-</td>')+'</tr>';
+      html += '<tr><td data-label="エリア">'+key+'</td><td data-label="数字数">'+size+'個</td><td data-label="回数">'+count+'</td><td data-label="出現率">'+(n>0?pct(rate):'-')+'</td><td data-label="理論値">'+pct(theoP)+'</td>'+(n>0?devCell(devPts,'ズレ(pt)'):'<td data-label="ズレ(pt)">-</td>')+'</tr>';
     });
     wheelTbody.innerHTML = html;
   }
@@ -705,23 +751,23 @@
       {label:'3rd dozen', get:s=>s.dozen['3rd'], theo:12/37},
     ];
 
-    function cell(s, wsize, getter){
-      if(!s) return '<td>-</td>';
+    function cell(s, wsize, getter, label){
+      if(!s) return '<td data-label="'+label+'">-</td>';
       const total = wsize ? Math.min(wsize, n) : n;
-      if(total===0) return '<td>-</td>';
+      if(total===0) return '<td data-label="'+label+'">-</td>';
       const rate = getter(s)/total;
-      return '<td>'+pct(rate)+'</td>';
+      return '<td data-label="'+label+'">'+pct(rate)+'</td>';
     }
 
     let html='';
     cats.forEach(c=>{
-      html += '<tr><td>'+c.label+'</td>'+
-        cell(all, null, c.get)+
-        cell(windowStats[1000], 1000, c.get)+
-        cell(windowStats[500], 500, c.get)+
-        cell(windowStats[100], 100, c.get)+
-        cell(windowStats[50], 50, c.get)+
-        '<td>'+pct(c.theo)+'</td></tr>';
+      html += '<tr><td data-label="カテゴリ">'+c.label+'</td>'+
+        cell(all, null, c.get, '全期間')+
+        cell(windowStats[1000], 1000, c.get, '直近1000')+
+        cell(windowStats[500], 500, c.get, '直近500')+
+        cell(windowStats[100], 100, c.get, '直近100')+
+        cell(windowStats[50], 50, c.get, '直近50')+
+        '<td data-label="理論値">'+pct(c.theo)+'</td></tr>';
     });
     trendTbody.innerHTML = html;
 
@@ -738,7 +784,7 @@
 
     function addTest(label, observedArr, probArr, minSampleHint){
       if(n===0){
-        rows.push('<tr><td>'+label+'</td><td>'+(observedArr.length-1)+'</td><td>-</td><td>-</td><td class="verdict none" style="display:inline-block;">データ不足</td></tr>');
+        rows.push('<tr><td data-label="検定対象">'+label+'</td><td data-label="自由度">'+(observedArr.length-1)+'</td><td data-label="χ²値">-</td><td data-label="p値">-</td><td data-label="判定"><span class="verdict none" style="display:inline-block;">データ不足</span></td></tr>');
         return;
       }
       const expected = probArr.map(p=>p*n);
@@ -748,8 +794,8 @@
       if(minExpected < 5){
         note = ' <span class="hint" style="display:inline">(サンプル数がやや不足)</span>';
       }
-      rows.push('<tr><td>'+label+'</td><td>'+df+'</td><td>'+chi2.toFixed(3)+'</td><td>'+p.toFixed(4)+'</td>'+
-        '<td><span class="verdict '+verdictClass(p)+'" style="display:inline-block;padding:3px 8px;">'+verdictText(p)+'</span>'+note+'</td></tr>');
+      rows.push('<tr><td data-label="検定対象">'+label+'</td><td data-label="自由度">'+df+'</td><td data-label="χ²値">'+chi2.toFixed(3)+'</td><td data-label="p値">'+p.toFixed(4)+'</td>'+
+        '<td data-label="判定"><span class="verdict '+verdictClass(p)+'" style="display:inline-block;padding:3px 8px;">'+verdictText(p)+'</span>'+note+'</td></tr>');
     }
 
     // 数字別（37区分, df=36） 目安として185回(37*5)以上を推奨
