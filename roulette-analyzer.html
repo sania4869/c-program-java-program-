@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ヨーロピアンルーレット統計解析アプリ</title>
+<style>
+  :root{
+    --bg:#0f1720;
+    --panel:#17222e;
+    --panel2:#1e2c3a;
+    --border:#2b3a4a;
+    --text:#e7eef6;
+    --sub:#93a5b8;
+    --accent:#4fb0ff;
+    --red:#e5484d;
+    --black:#2b2f36;
+    --green:#2fae66;
+    --warn:#e0a336;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.6;
+  }
+  header{
+    padding:22px 20px 14px;
+    text-align:center;
+    border-bottom:1px solid var(--border);
+    background:linear-gradient(180deg,#152230,#0f1720);
+  }
+  header h1{margin:0 0 4px;font-size:1.5rem;}
+  header p{margin:0;color:var(--sub);font-size:0.85rem;}
+  .home-link{display:block;margin-top:8px;font-size:0.85rem;}
+  .home-link a{color:var(--accent);text-decoration:none;}
+
+  main{
+    max-width:1180px;
+    margin:0 auto;
+    padding:20px 16px 60px;
+    display:grid;
+    grid-template-columns:340px 1fr;
+    gap:18px;
+  }
+  @media (max-width:900px){
+    main{grid-template-columns:1fr;}
+  }
+
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px 16px 18px;
+  }
+  .card + .card{margin-top:16px;}
+  .card h2{
+    margin:0 0 12px;
+    font-size:1.02rem;
+    display:flex;align-items:center;gap:8px;
+  }
+  .card h2 .n{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:22px;height:22px;border-radius:50%;
+    background:var(--accent);color:#06202f;font-size:0.75rem;font-weight:700;
+  }
+
+  /* ---- input panel ---- */
+  .quickpad{
+    display:grid;
+    grid-template-columns:repeat(12, 1fr);
+    gap:3px;
+    margin-bottom:8px;
+  }
+  .zero-btn{
+    grid-column:1 / span 12;
+    padding:8px 0;
+    margin-bottom:4px;
+  }
+  .num-btn{
+    padding:8px 0;
+    font-size:0.78rem;
+    border:none;
+    border-radius:5px;
+    color:#fff;
+    cursor:pointer;
+    font-weight:600;
+  }
+  .num-btn.red{background:var(--red);}
+  .num-btn.black{background:var(--black);border:1px solid #444;}
+  .num-btn.green{background:var(--green);}
+  .num-btn:active{transform:scale(0.94);}
+
+  .row-inline{display:flex;gap:8px;margin-top:10px;}
+  .row-inline input[type=text]{
+    flex:1;
+    padding:8px 10px;
+    border-radius:6px;
+    border:1px solid var(--border);
+    background:var(--panel2);
+    color:var(--text);
+    font-size:0.9rem;
+  }
+  button.btn{
+    padding:8px 12px;
+    border-radius:6px;
+    border:1px solid var(--border);
+    background:var(--panel2);
+    color:var(--text);
+    cursor:pointer;
+    font-size:0.85rem;
+  }
+  button.btn.primary{background:var(--accent);color:#06202f;border-color:var(--accent);font-weight:700;}
+  button.btn.danger{background:#3a1f22;border-color:#5c2c30;color:#ffb4b8;}
+  button.btn:hover{filter:brightness(1.1);}
+
+  textarea#bulkInput{
+    width:100%;
+    margin-top:10px;
+    min-height:64px;
+    padding:8px 10px;
+    border-radius:6px;
+    border:1px solid var(--border);
+    background:var(--panel2);
+    color:var(--text);
+    font-size:0.85rem;
+    resize:vertical;
+  }
+  .hint{font-size:0.75rem;color:var(--sub);margin-top:4px;}
+
+  .history{
+    margin-top:12px;
+    max-height:130px;
+    overflow-y:auto;
+    display:flex;
+    flex-wrap:wrap;
+    gap:4px;
+    padding:8px;
+    background:var(--panel2);
+    border-radius:8px;
+    border:1px solid var(--border);
+  }
+  .chip{
+    width:26px;height:26px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:0.68rem;font-weight:700;color:#fff;
+  }
+  .chip.red{background:var(--red);}
+  .chip.black{background:var(--black);border:1px solid #555;}
+  .chip.green{background:var(--green);}
+  .empty-msg{color:var(--sub);font-size:0.85rem;}
+
+  .stat-summary{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:6px;}
+  .stat-summary div{
+    background:var(--panel2);
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:8px 14px;
+    font-size:0.8rem;
+    color:var(--sub);
+  }
+  .stat-summary div b{display:block;font-size:1.15rem;color:var(--text);}
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:0.82rem;
+  }
+  table caption{text-align:left;color:var(--sub);font-size:0.75rem;margin-bottom:4px;}
+  th,td{
+    padding:6px 8px;
+    text-align:right;
+    border-bottom:1px solid var(--border);
+    white-space:nowrap;
+  }
+  th:first-child,td:first-child{text-align:left;}
+  th{color:var(--sub);font-weight:600;}
+  .scroll-x{overflow-x:auto;}
+  .dev-pos{color:#ff8a8a;}
+  .dev-neg{color:#7ec8ff;}
+
+  .bars{display:flex;flex-direction:column;gap:3px;margin-top:8px;}
+  .bar-row{display:grid;grid-template-columns:34px 1fr 70px;align-items:center;gap:8px;font-size:0.72rem;}
+  .bar-track{background:var(--panel2);border-radius:4px;overflow:hidden;height:12px;border:1px solid var(--border);}
+  .bar-fill{height:100%;background:var(--accent);}
+  .bar-num{text-align:right;font-weight:700;}
+  .bar-num.red{color:var(--red);}
+  .bar-num.black{color:#aeb7c1;}
+  .bar-num.green{color:var(--green);}
+
+  .verdict{
+    margin-top:6px;
+    padding:8px 10px;
+    border-radius:6px;
+    font-size:0.8rem;
+  }
+  .verdict.low{background:#122a1c;color:#7fe3a8;border:1px solid #1d5c39;}
+  .verdict.mid{background:#2c2612;color:var(--warn);border:1px solid #5c4a1d;}
+  .verdict.high{background:#2c1414;color:#ff8f8f;border:1px solid #5c1d1d;}
+  .verdict.none{background:#1c2530;color:var(--sub);border:1px solid var(--border);}
+
+  footer{text-align:center;color:var(--sub);font-size:0.75rem;padding:14px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎲 ヨーロピアンルーレット統計解析アプリ</h1>
+  <p>出目（0〜36）を記録するだけで、色・奇偶・大小・ダズン・ホイールエリア・カイ二乗検定まで自動集計します</p>
+  <span class="home-link"><a href="./index.html">⬆ HOMEへ</a></span>
+</header>
+
+<main>
+  <!-- ===================== 入力パネル ===================== -->
+  <div>
+    <div class="card">
+      <h2><span class="n">1</span>出目を記録する</h2>
+
+      <div class="quickpad" id="quickpad"></div>
+
+      <div class="row-inline">
+        <input type="text" id="singleInput" placeholder="数字を入力 (0-36)" inputmode="numeric">
+        <button class="btn primary" id="addBtn">追加</button>
+      </div>
+
+      <textarea id="bulkInput" placeholder="例: 12, 35, 0, 26, 3, 18 ...&#10;（カンマ・スペース・改行区切りで複数まとめて貼り付け可能）"></textarea>
+      <div class="row-inline">
+        <button class="btn" id="bulkAddBtn">一括読み込み</button>
+        <button class="btn" id="undoBtn">1つ戻す</button>
+        <button class="btn danger" id="clearBtn">全て削除</button>
+      </div>
+      <p class="hint">入力データはこの端末のブラウザ内(localStorage)に自動保存されます。</p>
+
+      <div class="history" id="history"><span class="empty-msg">まだ記録がありません</span></div>
+    </div>
+  </div>
+
+  <!-- ===================== 統計パネル ===================== -->
+  <div id="statsPanel">
+
+    <div class="card">
+      <h2><span class="n">2</span>概要</h2>
+      <div class="stat-summary" id="overviewBox"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">3</span>基本カテゴリの出現率（理論値との比較）</h2>
+      <div class="scroll-x">
+        <table id="categoryTable">
+          <thead>
+            <tr><th>カテゴリ</th><th>回数</th><th>出現率</th><th>理論値</th><th>ズレ(pt)</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">4</span>数字別 出現回数（0〜36）</h2>
+      <div class="bars" id="numberBars"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">5</span>ホイール上のエリア別 出現率</h2>
+      <p class="hint">実際のシリンダー配列に基づく3エリア（ヴォアザン17個 / ティエ12個 / オルファリン8個）での集計です。</p>
+      <div class="scroll-x">
+        <table id="wheelTable">
+          <thead><tr><th>エリア</th><th>数字数</th><th>回数</th><th>出現率</th><th>理論値</th><th>ズレ(pt)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">6</span>直近 50 / 100 / 500 / 1000 回での変化</h2>
+      <div class="scroll-x">
+        <table id="trendTable">
+          <thead><tr><th>カテゴリ</th><th>全期間</th><th>直近1000</th><th>直近500</th><th>直近100</th><th>直近50</th><th>理論値</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="hint" id="trendHint"></p>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">7</span>カイ二乗検定（偶然のブレ か 偏りの可能性 か）</h2>
+      <p class="hint">帰無仮説「全ての目・カテゴリは理論通りの確率で均等に出現する」に対する適合度検定です。p値が小さいほど、理論値からのズレが偶然では説明しにくいことを示します（あくまで統計的な目安であり、断定するものではありません）。</p>
+      <div class="scroll-x">
+        <table id="chiTable">
+          <thead><tr><th>検定対象</th><th>自由度</th><th>χ²値</th><th>p値</th><th>判定</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>ヨーロピアンルーレット統計解析アプリ &mdash; 記録は自端末内にのみ保存されます</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------------- 基礎データ ---------------- */
+  const RED = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
+
+  // 実際のヨーロピアン・シリンダー配列（0を起点に時計回り）
+  const WHEEL_ORDER = [0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26];
+
+  const SECTORS = {
+    "ヴォアザン・デュ・ゼロ": [22,18,29,7,28,12,35,3,26,0,32,15,19,4,21,2,25],
+    "ティエ・デュ・シランドル": [27,13,36,11,30,8,23,10,5,24,16,33],
+    "オルファリン": [17,34,6,1,20,14,31,9]
+  };
+
+  function classify(n){
+    if(n===0) return {color:'zero', parity:'zero', half:'zero', dozen:'zero'};
+    return {
+      color: RED.has(n) ? 'red':'black',
+      parity: n%2===0 ? 'even':'odd',
+      half: n<=18 ? 'low':'high',
+      dozen: n<=12 ? '1st' : (n<=24 ? '2nd':'3rd')
+    };
+  }
+  function sectorOf(n){
+    for(const key in SECTORS){ if(SECTORS[key].includes(n)) return key; }
+    return null;
+  }
+
+  /* ---------------- 統計関数（カイ二乗） ---------------- */
+  function logGamma(x){
+    const g=7;
+    const c=[0.99999999999980993,676.5203681218851,-1259.1392167224028,
+      771.32342877765313,-176.61502916214059,12.507343278686905,
+      -0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+    if(x<0.5) return Math.log(Math.PI/Math.sin(Math.PI*x)) - logGamma(1-x);
+    x-=1;
+    let a=c[0];
+    const t=x+g+0.5;
+    for(let i=1;i<g+2;i++) a+=c[i]/(x+i);
+    return 0.5*Math.log(2*Math.PI)+(x+0.5)*Math.log(t)-t+Math.log(a);
+  }
+  function gammaSeriesP(a,x){
+    let sum=1/a, term=1/a, n=a;
+    for(let i=0;i<300;i++){
+      n+=1; term*=x/n; sum+=term;
+      if(Math.abs(term) < Math.abs(sum)*1e-15) break;
+    }
+    return sum*Math.exp(-x+a*Math.log(x)-logGamma(a));
+  }
+  function gammaCF_Q(a,x){
+    const FPMIN=1e-300;
+    let b=x+1-a, c=1/FPMIN, d=1/b, h=d;
+    for(let i=1;i<=300;i++){
+      const an=-i*(i-a);
+      b+=2;
+      d=an*d+b; if(Math.abs(d)<FPMIN) d=FPMIN;
+      c=b+an/c; if(Math.abs(c)<FPMIN) c=FPMIN;
+      d=1/d;
+      const del=d*c; h*=del;
+      if(Math.abs(del-1)<1e-15) break;
+    }
+    return Math.exp(-x+a*Math.log(x)-logGamma(a))*h;
+  }
+  function chiSquarePValue(chi2, df){
+    if(chi2<=0) return 1;
+    const a=df/2, x=chi2/2;
+    const Q = (x < a+1) ? (1-gammaSeriesP(a,x)) : gammaCF_Q(a,x);
+    return Math.max(0, Math.min(1, Q));
+  }
+  function chiSquareTest(observed, expected){
+    // observed, expected: arrays of same length (expected = probability * n)
+    let chi2=0;
+    for(let i=0;i<observed.length;i++){
+      if(expected[i] <= 0) continue;
+      const d = observed[i]-expected[i];
+      chi2 += (d*d)/expected[i];
+    }
+    const df = observed.length-1;
+    return {chi2, df, p: chiSquarePValue(chi2, df)};
+  }
+  function verdictClass(p){
+    if(p===null) return 'none';
+    if(p < 0.01) return 'high';
+    if(p < 0.05) return 'mid';
+    return 'low';
+  }
+  function verdictText(p){
+    if(p===null) return 'データ不足';
+    if(p < 0.01) return '強い偏りの可能性あり (p<0.01)';
+    if(p < 0.05) return 'やや偏りの可能性あり (p<0.05)';
+    return '偶然のブレの範囲 (p≥0.05)';
+  }
+
+  /* ---------------- 状態管理 ---------------- */
+  const STORAGE_KEY = 'roulette_spins_v1';
+  let spins = [];
+  try{
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    if(Array.isArray(saved)) spins = saved.filter(n=>Number.isInteger(n) && n>=0 && n<=36);
+  }catch(e){ spins = []; }
+
+  function save(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(spins)); }catch(e){}
+  }
+  function addSpin(n){
+    if(!Number.isInteger(n) || n<0 || n>36) return false;
+    spins.push(n);
+    return true;
+  }
+
+  /* ---------------- UI: 数字パッド ---------------- */
+  const quickpad = document.getElementById('quickpad');
+  (function buildPad(){
+    const zeroBtn = document.createElement('button');
+    zeroBtn.className='num-btn green zero-btn';
+    zeroBtn.textContent='0';
+    zeroBtn.addEventListener('click', ()=>{ addSpin(0); save(); render(); });
+    quickpad.appendChild(zeroBtn);
+
+    // 実際のルーレット卓のレイアウト: 列ごとに 上段=3n, 中段=3n-1, 下段=3n-2
+    const rows = [[],[],[]]; // top, mid, bottom
+    for(let col=1; col<=12; col++){
+      rows[0].push(col*3);
+      rows[1].push(col*3-1);
+      rows[2].push(col*3-2);
+    }
+    rows.forEach(rowNums=>{
+      rowNums.forEach(num=>{
+        const b=document.createElement('button');
+        b.className='num-btn ' + (RED.has(num)?'red':'black');
+        b.textContent=num;
+        b.addEventListener('click', ()=>{ addSpin(num); save(); render(); });
+        quickpad.appendChild(b);
+      });
+    });
+  })();
+
+  /* ---------------- UI: 入力コントロール ---------------- */
+  const singleInput = document.getElementById('singleInput');
+  const addBtn = document.getElementById('addBtn');
+  const bulkInput = document.getElementById('bulkInput');
+  const bulkAddBtn = document.getElementById('bulkAddBtn');
+  const undoBtn = document.getElementById('undoBtn');
+  const clearBtn = document.getElementById('clearBtn');
+
+  function trySingleAdd(){
+    const v = singleInput.value.trim();
+    if(v==='') return;
+    const n = parseInt(v,10);
+    if(addSpin(n)){
+      singleInput.value='';
+      save(); render();
+    }else{
+      singleInput.style.outline='2px solid var(--red)';
+      setTimeout(()=>{singleInput.style.outline='';},600);
+    }
+  }
+  addBtn.addEventListener('click', trySingleAdd);
+  singleInput.addEventListener('keydown', e=>{ if(e.key==='Enter') trySingleAdd(); });
+
+  bulkAddBtn.addEventListener('click', ()=>{
+    const text = bulkInput.value;
+    const tokens = text.split(/[\s,、，]+/).filter(t=>t.length>0);
+    let added=0, rejected=0;
+    tokens.forEach(t=>{
+      const n = parseInt(t,10);
+      if(addSpin(n)) added++; else rejected++;
+    });
+    bulkInput.value='';
+    save(); render();
+    if(rejected>0){
+      alert(added+'件を追加しました。'+rejected+'件は0〜36の範囲外のため無視されました。');
+    }
+  });
+
+  undoBtn.addEventListener('click', ()=>{
+    spins.pop();
+    save(); render();
+  });
+  clearBtn.addEventListener('click', ()=>{
+    if(spins.length===0) return;
+    if(confirm('記録した全ての出目を削除します。よろしいですか？')){
+      spins = [];
+      save(); render();
+    }
+  });
+
+  /* ---------------- 描画 ---------------- */
+  const historyBox = document.getElementById('history');
+  const overviewBox = document.getElementById('overviewBox');
+  const categoryTbody = document.querySelector('#categoryTable tbody');
+  const numberBars = document.getElementById('numberBars');
+  const wheelTbody = document.querySelector('#wheelTable tbody');
+  const trendTbody = document.querySelector('#trendTable tbody');
+  const trendHint = document.getElementById('trendHint');
+  const chiTbody = document.querySelector('#chiTable tbody');
+
+  function pct(x){ return (x*100).toFixed(2)+'%'; }
+  function devCell(devPts){
+    const cls = devPts>0 ? 'dev-pos' : (devPts<0 ? 'dev-neg':'');
+    const sign = devPts>0 ? '+' : '';
+    return '<td class="'+cls+'">'+sign+devPts.toFixed(2)+'</td>';
+  }
+
+  function computeCategoryCounts(list){
+    const n = list.length;
+    const color = {red:0, black:0, zero:0};
+    const parity = {odd:0, even:0, zero:0};
+    const half = {low:0, high:0, zero:0};
+    const dozen = {'1st':0,'2nd':0,'3rd':0, zero:0};
+    const numbers = new Array(37).fill(0);
+    const sectors = {}; Object.keys(SECTORS).forEach(k=>sectors[k]=0);
+
+    list.forEach(num=>{
+      numbers[num]++;
+      const c = classify(num);
+      color[c.color]++;
+      parity[c.parity]++;
+      half[c.half]++;
+      dozen[c.dozen]++;
+      const s = sectorOf(num);
+      if(s) sectors[s]++;
+    });
+    return {n, color, parity, half, dozen, numbers, sectors};
+  }
+
+  function renderOverview(stats){
+    const n = spins.length;
+    const last = n>0 ? spins[n-1] : '-';
+    let uniqueSeen = new Set(spins).size;
+    overviewBox.innerHTML =
+      '<div>総回数<b>'+n+'</b></div>'+
+      '<div>直近の出目<b>'+last+'</b></div>'+
+      '<div>出現した数字の種類<b>'+uniqueSeen+' / 37</b></div>';
+  }
+
+  function renderCategoryTable(stats){
+    const n = stats.n;
+    const rows = [];
+    function row(label, count, theoP){
+      const rate = n>0 ? count/n : 0;
+      const devPts = n>0 ? (rate-theoP)*100 : 0;
+      rows.push('<tr><td>'+label+'</td><td>'+count+'</td><td>'+(n>0?pct(rate):'-')+'</td><td>'+pct(theoP)+'</td>'+(n>0?devCell(devPts):'<td>-</td>')+'</tr>');
+    }
+    row('赤', stats.color.red, 18/37);
+    row('黒', stats.color.black, 18/37);
+    row('0（グリーン）', stats.color.zero, 1/37);
+    row('奇数', stats.parity.odd, 18/37);
+    row('偶数', stats.parity.even, 18/37);
+    row('0', stats.parity.zero, 1/37);
+    row('1-18（小）', stats.half.low, 18/37);
+    row('19-36（大）', stats.half.high, 18/37);
+    row('1st dozen (1-12)', stats.dozen['1st'], 12/37);
+    row('2nd dozen (13-24)', stats.dozen['2nd'], 12/37);
+    row('3rd dozen (25-36)', stats.dozen['3rd'], 12/37);
+    categoryTbody.innerHTML = rows.join('');
+  }
+
+  function renderNumberBars(stats){
+    const n = stats.n;
+    const theoP = 1/37;
+    const maxCount = Math.max(1, ...stats.numbers);
+    let html='';
+    for(let num=0; num<=36; num++){
+      const count = stats.numbers[num];
+      const rate = n>0 ? count/n : 0;
+      const widthPct = (count/maxCount*100).toFixed(1);
+      const cls = num===0 ? 'green' : (RED.has(num)?'red':'black');
+      html += '<div class="bar-row">'+
+        '<span class="bar-num '+cls+'">'+num+'</span>'+
+        '<span class="bar-track"><span class="bar-fill" style="width:'+widthPct+'%"></span></span>'+
+        '<span>'+count+'回 ('+(n>0?(rate*100).toFixed(1):'0.0')+'%)</span>'+
+        '</div>';
+    }
+    numberBars.innerHTML = html;
+  }
+
+  function renderWheelTable(stats){
+    const n = stats.n;
+    let html='';
+    Object.keys(SECTORS).forEach(key=>{
+      const size = SECTORS[key].length;
+      const theoP = size/37;
+      const count = stats.sectors[key];
+      const rate = n>0 ? count/n : 0;
+      const devPts = n>0 ? (rate-theoP)*100 : 0;
+      html += '<tr><td>'+key+'</td><td>'+size+'個</td><td>'+count+'</td><td>'+(n>0?pct(rate):'-')+'</td><td>'+pct(theoP)+'</td>'+(n>0?devCell(devPts):'<td>-</td>')+'</tr>';
+    });
+    wheelTbody.innerHTML = html;
+  }
+
+  function renderTrendTable(){
+    const windows = [1000,500,100,50];
+    const n = spins.length;
+    const all = computeCategoryCounts(spins);
+    const windowStats = {};
+    windows.forEach(w=>{
+      if(n >= w){
+        windowStats[w] = computeCategoryCounts(spins.slice(n-w));
+      }else{
+        windowStats[w] = null;
+      }
+    });
+
+    const cats = [
+      {label:'赤', get:s=>s.color.red, theo:18/37},
+      {label:'黒', get:s=>s.color.black, theo:18/37},
+      {label:'0', get:s=>s.color.zero, theo:1/37},
+      {label:'奇数', get:s=>s.parity.odd, theo:18/37},
+      {label:'偶数', get:s=>s.parity.even, theo:18/37},
+      {label:'1-18', get:s=>s.half.low, theo:18/37},
+      {label:'19-36', get:s=>s.half.high, theo:18/37},
+      {label:'1st dozen', get:s=>s.dozen['1st'], theo:12/37},
+      {label:'2nd dozen', get:s=>s.dozen['2nd'], theo:12/37},
+      {label:'3rd dozen', get:s=>s.dozen['3rd'], theo:12/37},
+    ];
+
+    function cell(s, wsize, getter){
+      if(!s) return '<td>-</td>';
+      const total = wsize ? Math.min(wsize, n) : n;
+      if(total===0) return '<td>-</td>';
+      const rate = getter(s)/total;
+      return '<td>'+pct(rate)+'</td>';
+    }
+
+    let html='';
+    cats.forEach(c=>{
+      html += '<tr><td>'+c.label+'</td>'+
+        cell(all, null, c.get)+
+        cell(windowStats[1000], 1000, c.get)+
+        cell(windowStats[500], 500, c.get)+
+        cell(windowStats[100], 100, c.get)+
+        cell(windowStats[50], 50, c.get)+
+        '<td>'+pct(c.theo)+'</td></tr>';
+    });
+    trendTbody.innerHTML = html;
+
+    if(n < 50){
+      trendHint.textContent = '※ データが50回未満のため、直近区間の比較はまだ表示できません（現在 '+n+' 回）。';
+    }else{
+      trendHint.textContent = '※ データが足りない区間は「-」と表示されます。';
+    }
+  }
+
+  function renderChiTable(stats){
+    const n = stats.n;
+    const rows = [];
+
+    function addTest(label, observedArr, probArr, minSampleHint){
+      if(n===0){
+        rows.push('<tr><td>'+label+'</td><td>'+(observedArr.length-1)+'</td><td>-</td><td>-</td><td class="verdict none" style="display:inline-block;">データ不足</td></tr>');
+        return;
+      }
+      const expected = probArr.map(p=>p*n);
+      const {chi2, df, p} = chiSquareTest(observedArr, expected);
+      const minExpected = Math.min(...expected);
+      let note = '';
+      if(minExpected < 5){
+        note = ' <span class="hint" style="display:inline">(サンプル数がやや不足)</span>';
+      }
+      rows.push('<tr><td>'+label+'</td><td>'+df+'</td><td>'+chi2.toFixed(3)+'</td><td>'+p.toFixed(4)+'</td>'+
+        '<td><span class="verdict '+verdictClass(p)+'" style="display:inline-block;padding:3px 8px;">'+verdictText(p)+'</span>'+note+'</td></tr>');
+    }
+
+    // 数字別（37区分, df=36） 目安として185回(37*5)以上を推奨
+    addTest('数字（0-36, 全37区分）', stats.numbers, new Array(37).fill(1/37));
+    addTest('色（赤/黒/0）', [stats.color.red, stats.color.black, stats.color.zero], [18/37,18/37,1/37]);
+    addTest('奇偶（奇/偶/0）', [stats.parity.odd, stats.parity.even, stats.parity.zero], [18/37,18/37,1/37]);
+    addTest('大小（1-18/19-36/0）', [stats.half.low, stats.half.high, stats.half.zero], [18/37,18/37,1/37]);
+    addTest('ダズン（1st/2nd/3rd/0）', [stats.dozen['1st'],stats.dozen['2nd'],stats.dozen['3rd'],stats.dozen.zero], [12/37,12/37,12/37,1/37]);
+    addTest('ホイールエリア（3区分）', Object.keys(SECTORS).map(k=>stats.sectors[k]), Object.keys(SECTORS).map(k=>SECTORS[k].length/37));
+
+    chiTbody.innerHTML = rows.join('');
+  }
+
+  function renderHistory(){
+    if(spins.length===0){
+      historyBox.innerHTML = '<span class="empty-msg">まだ記録がありません</span>';
+      return;
+    }
+    const recent = spins.slice(-200); // 表示は直近200件まで
+    historyBox.innerHTML = recent.map(num=>{
+      const cls = num===0 ? 'green' : (RED.has(num)?'red':'black');
+      return '<span class="chip '+cls+'">'+num+'</span>';
+    }).join('');
+    historyBox.scrollTop = historyBox.scrollHeight;
+  }
+
+  function render(){
+    const stats = computeCategoryCounts(spins);
+    renderOverview(stats);
+    renderCategoryTable(stats);
+    renderNumberBars(stats);
+    renderWheelTable(stats);
+    renderTrendTable();
+    renderChiTable(stats);
+    renderHistory();
+  }
+
+  render();
+})();
+</script>
+
+</body>
+</html>
