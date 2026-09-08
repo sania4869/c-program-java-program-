@@ -4,38 +4,68 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ヨーロピアンルーレット統計解析アプリ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,500;0,6..96,700;1,6..96,500&family=Space+Mono:wght@400;700&display=swap">
 <style>
   :root{
-    --bg:#0f1720;
-    --panel:#17222e;
-    --panel2:#1e2c3a;
-    --border:#2b3a4a;
-    --text:#e7eef6;
-    --sub:#93a5b8;
-    --accent:#4fb0ff;
-    --red:#e5484d;
-    --black:#2b2f36;
-    --green:#2fae66;
-    --warn:#e0a336;
+    /* felt table, ivory chalk, brass rim */
+    --bg:#0a1912;
+    --panel:#102319;
+    --panel2:#173021;
+    --border:#274536;
+    --text:#f1efe4;
+    --sub:#8ba493;
+    --accent:#c9a13b;
+    --accent-ink:#241a04;
+    --pocket-red:#a12233;
+    --pocket-red-bright:#d24a58;
+    --pocket-black:#15140f;
+    --pocket-green:#3a8a5c;
+    --warn:#d98f3c;
+    --danger:#c65a5a;
+    --font-display:"Bodoni Moda", Georgia, serif;
+    --font-mono:"Space Mono", "SFMono-Regular", Consolas, monospace;
+    --font-body:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
   }
   *{box-sizing:border-box;}
   body{
     margin:0;
-    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+    font-family:var(--font-body);
     background:var(--bg);
     color:var(--text);
     line-height:1.6;
   }
   header{
-    padding:22px 20px 14px;
+    padding:30px 20px 20px;
     text-align:center;
     border-bottom:1px solid var(--border);
-    background:linear-gradient(180deg,#152230,#0f1720);
+    background:
+      radial-gradient(ellipse at 50% -40%, rgba(201,161,59,0.14), transparent 60%),
+      linear-gradient(180deg,#112418,#0a1912);
   }
-  header h1{margin:0 0 4px;font-size:1.5rem;}
-  header p{margin:0;color:var(--sub);font-size:0.85rem;}
-  .home-link{display:block;margin-top:8px;font-size:0.85rem;}
-  .home-link a{color:var(--accent);text-decoration:none;}
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:0.68rem;
+    letter-spacing:0.28em;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin:0 0 10px;
+  }
+  header h1{
+    margin:0 0 10px;
+    font-family:var(--font-display);
+    font-weight:700;
+    font-style:italic;
+    font-size:2rem;
+    text-wrap:balance;
+    color:var(--text);
+  }
+  header .rule{
+    width:64px;height:2px;margin:0 auto 12px;
+    background:linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+  header p{margin:0 auto;max-width:520px;color:var(--sub);font-size:0.88rem;}
+  .home-link{display:block;margin-top:12px;font-size:0.8rem;font-family:var(--font-mono);letter-spacing:0.03em;}
+  .home-link a{color:var(--accent);text-decoration:none;border-bottom:1px dotted var(--accent);}
 
   main{
     max-width:1180px;
@@ -50,21 +80,34 @@
   }
 
   .card{
+    position:relative;
     background:var(--panel);
     border:1px solid var(--border);
-    border-radius:12px;
-    padding:16px 16px 18px;
+    border-radius:6px;
+    padding:18px 16px 18px;
+  }
+  .card::before{
+    content:"";
+    position:absolute;top:0;left:14px;right:14px;height:1px;
+    background:linear-gradient(90deg, transparent, var(--accent) 20%, var(--accent) 80%, transparent);
+    opacity:0.55;
   }
   .card + .card{margin-top:16px;}
   .card h2{
-    margin:0 0 12px;
-    font-size:1.02rem;
-    display:flex;align-items:center;gap:8px;
+    margin:0 0 14px;
+    font-family:var(--font-display);
+    font-style:italic;
+    font-weight:700;
+    font-size:1.15rem;
+    letter-spacing:0.01em;
+    display:flex;align-items:center;gap:10px;
   }
   .card h2 .n{
     display:inline-flex;align-items:center;justify-content:center;
     width:22px;height:22px;border-radius:50%;
-    background:var(--accent);color:#06202f;font-size:0.75rem;font-weight:700;
+    font-family:var(--font-mono);font-style:normal;
+    background:var(--accent);color:var(--accent-ink);font-size:0.72rem;font-weight:700;
+    flex:none;
   }
 
   /* ---- input panel ---- */
@@ -81,17 +124,21 @@
   }
   .num-btn{
     padding:8px 0;
+    font-family:var(--font-mono);
     font-size:0.78rem;
     border:none;
-    border-radius:5px;
-    color:#fff;
+    border-radius:4px;
+    color:#f1efe4;
     cursor:pointer;
-    font-weight:600;
+    font-weight:700;
+    box-shadow:inset 0 0 0 1px rgba(241,239,228,0.08);
   }
-  .num-btn.red{background:var(--red);}
-  .num-btn.black{background:var(--black);border:1px solid #444;}
-  .num-btn.green{background:var(--green);}
+  .num-btn.red{background:var(--pocket-red);}
+  .num-btn.black{background:var(--pocket-black);box-shadow:inset 0 0 0 1px rgba(241,239,228,0.16);}
+  .num-btn.green{background:var(--pocket-green);}
+  .num-btn:hover{filter:brightness(1.15);}
   .num-btn:active{transform:scale(0.94);}
+  .num-btn:focus-visible{outline:2px solid var(--accent);outline-offset:1px;}
 
   .row-inline{display:flex;gap:8px;margin-top:10px;}
   .row-inline input[type=text]{
@@ -112,9 +159,12 @@
     cursor:pointer;
     font-size:0.85rem;
   }
-  button.btn.primary{background:var(--accent);color:#06202f;border-color:var(--accent);font-weight:700;}
-  button.btn.danger{background:#3a1f22;border-color:#5c2c30;color:#ffb4b8;}
+  button.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700;}
+  button.btn.danger{background:#2e1414;border-color:#4a2323;color:#e39b9b;}
   button.btn:hover{filter:brightness(1.1);}
+  button.btn:focus-visible, .row-inline input[type=text]:focus-visible, textarea#bulkInput:focus-visible{
+    outline:2px solid var(--accent);outline-offset:1px;
+  }
 
   textarea#bulkInput{
     width:100%;
@@ -146,23 +196,29 @@
     width:26px;height:26px;
     border-radius:50%;
     display:flex;align-items:center;justify-content:center;
-    font-size:0.68rem;font-weight:700;color:#fff;
+    font-family:var(--font-mono);
+    font-size:0.68rem;font-weight:700;color:#f1efe4;
   }
-  .chip.red{background:var(--red);}
-  .chip.black{background:var(--black);border:1px solid #555;}
-  .chip.green{background:var(--green);}
+  .chip.red{background:var(--pocket-red);}
+  .chip.black{background:var(--pocket-black);border:1px solid #3a382e;}
+  .chip.green{background:var(--pocket-green);}
   .empty-msg{color:var(--sub);font-size:0.85rem;}
 
   .stat-summary{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:6px;}
   .stat-summary div{
     background:var(--panel2);
     border:1px solid var(--border);
-    border-radius:8px;
-    padding:8px 14px;
-    font-size:0.8rem;
+    border-radius:6px;
+    padding:10px 16px;
+    font-size:0.78rem;
     color:var(--sub);
   }
-  .stat-summary div b{display:block;font-size:1.15rem;color:var(--text);}
+  .stat-summary div b{
+    display:block;margin-top:2px;
+    font-family:var(--font-mono);
+    font-size:1.3rem;color:var(--text);
+    font-variant-numeric:tabular-nums;
+  }
 
   table{
     width:100%;
@@ -171,45 +227,51 @@
   }
   table caption{text-align:left;color:var(--sub);font-size:0.75rem;margin-bottom:4px;}
   th,td{
-    padding:6px 8px;
+    padding:7px 8px;
     text-align:right;
     border-bottom:1px solid var(--border);
     white-space:nowrap;
+    font-family:var(--font-mono);
+    font-variant-numeric:tabular-nums;
   }
-  th:first-child,td:first-child{text-align:left;}
-  th{color:var(--sub);font-weight:600;}
+  th:first-child,td:first-child{text-align:left;font-family:var(--font-body);}
+  th{color:var(--sub);font-weight:700;font-size:0.72rem;letter-spacing:0.03em;text-transform:uppercase;}
   .scroll-x{overflow-x:auto;}
-  .dev-pos{color:#ff8a8a;}
-  .dev-neg{color:#7ec8ff;}
+  .dev-pos{color:var(--pocket-red-bright);}
+  .dev-neg{color:#7fb8d8;}
 
   .bars{display:flex;flex-direction:column;gap:3px;margin-top:8px;}
-  .bar-row{display:grid;grid-template-columns:34px 1fr 70px;align-items:center;gap:8px;font-size:0.72rem;}
-  .bar-track{background:var(--panel2);border-radius:4px;overflow:hidden;height:12px;border:1px solid var(--border);}
+  .bar-row{display:grid;grid-template-columns:34px 1fr 92px;align-items:center;gap:8px;font-size:0.72rem;}
+  .bar-track{background:var(--panel2);border-radius:3px;overflow:hidden;height:12px;border:1px solid var(--border);}
   .bar-fill{height:100%;background:var(--accent);}
-  .bar-num{text-align:right;font-weight:700;}
-  .bar-num.red{color:var(--red);}
+  .bar-num{text-align:right;font-family:var(--font-mono);font-weight:700;}
+  .bar-num.red{color:var(--pocket-red-bright);}
   .bar-num.black{color:#aeb7c1;}
-  .bar-num.green{color:var(--green);}
+  .bar-num.green{color:var(--pocket-green);}
+  #numberBars{font-family:var(--font-mono);font-variant-numeric:tabular-nums;}
 
   .verdict{
     margin-top:6px;
     padding:8px 10px;
-    border-radius:6px;
+    border-radius:5px;
     font-size:0.8rem;
+    font-family:var(--font-body);
   }
-  .verdict.low{background:#122a1c;color:#7fe3a8;border:1px solid #1d5c39;}
-  .verdict.mid{background:#2c2612;color:var(--warn);border:1px solid #5c4a1d;}
-  .verdict.high{background:#2c1414;color:#ff8f8f;border:1px solid #5c1d1d;}
+  .verdict.low{background:#132a1f;color:#7fd6a4;border:1px solid #21503a;}
+  .verdict.mid{background:#2c2410;color:var(--warn);border:1px solid #5a4620;}
+  .verdict.high{background:#2c1414;color:#e39b9b;border:1px solid #5c2626;}
   .verdict.none{background:#1c2530;color:var(--sub);border:1px solid var(--border);}
 
-  footer{text-align:center;color:var(--sub);font-size:0.75rem;padding:14px;}
+  footer{text-align:center;color:var(--sub);font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.04em;padding:16px;}
 </style>
 </head>
 <body>
 
 <header>
-  <h1>🎲 ヨーロピアンルーレット統計解析アプリ</h1>
-  <p>出目（0〜36）を記録するだけで、色・奇偶・大小・ダズン・ホイールエリア・カイ二乗検定まで自動集計します</p>
+  <p class="eyebrow">Cylindre Français &middot; 0&ndash;36</p>
+  <h1>ヨーロピアンルーレット統計解析アプリ</h1>
+  <div class="rule"></div>
+  <p>出目を記録するだけで、色・奇偶・大小・ダズン・ホイールエリア・カイ二乗検定まで自動集計します</p>
   <span class="home-link"><a href="./index.html">⬆ HOMEへ</a></span>
 </header>
 
@@ -299,7 +361,7 @@
   </div>
 </main>
 
-<footer>ヨーロピアンルーレット統計解析アプリ &mdash; 記録は自端末内にのみ保存されます</footer>
+<footer>RIEN NE VA PLUS &middot; 記録は自端末内(localStorage)にのみ保存されます</footer>
 
 <script>
 (function(){
@@ -456,7 +518,7 @@
       singleInput.value='';
       save(); render();
     }else{
-      singleInput.style.outline='2px solid var(--red)';
+      singleInput.style.outline='2px solid var(--danger)';
       setTimeout(()=>{singleInput.style.outline='';},600);
     }
   }
