@@ -393,6 +393,7 @@
 
     <div class="card">
       <h2><span class="n">3</span>基本カテゴリの出現率（理論値との比較）</h2>
+      <p class="hint">ダズン(1st/2nd/3rd)とコラム(列)は、どちらも12個の数字をカバーする「2:1配当」のベットです。</p>
       <div class="scroll-x">
         <table id="categoryTable">
           <thead>
@@ -404,12 +405,23 @@
     </div>
 
     <div class="card">
-      <h2><span class="n">4</span>数字別 出現回数（0〜36）</h2>
+      <h2><span class="n">4</span>2つ組み合わせでカバーした場合の出現率</h2>
+      <p class="hint">ダズンまたはコラムのうち2つ(合計24個の数字、理論値 24/37 ≈ 64.86%)に同時に賭けた場合の出現率です。</p>
+      <div class="scroll-x">
+        <table id="comboTable">
+          <thead><tr><th>組み合わせ</th><th>回数</th><th>出現率</th><th>理論値</th><th>ズレ(pt)</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="n">5</span>数字別 出現回数（0〜36）</h2>
       <div class="bars" id="numberBars"></div>
     </div>
 
     <div class="card">
-      <h2><span class="n">5</span>ホイール上のエリア別 出現率</h2>
+      <h2><span class="n">6</span>ホイール上のエリア別 出現率</h2>
       <p class="hint">実際のシリンダー配列に基づく3エリア（ヴォアザン17個 / ティエ12個 / オルファリン8個）での集計です。</p>
       <div class="scroll-x">
         <table id="wheelTable">
@@ -420,7 +432,7 @@
     </div>
 
     <div class="card">
-      <h2><span class="n">6</span>直近 50 / 100 / 500 / 1000 回での変化</h2>
+      <h2><span class="n">7</span>直近 50 / 100 / 500 / 1000 回での変化</h2>
       <div class="scroll-x">
         <table id="trendTable">
           <thead><tr><th>カテゴリ</th><th>全期間</th><th>直近1000</th><th>直近500</th><th>直近100</th><th>直近50</th><th>理論値</th></tr></thead>
@@ -431,7 +443,7 @@
     </div>
 
     <div class="card">
-      <h2><span class="n">7</span>カイ二乗検定（偶然のブレ か 偏りの可能性 か）</h2>
+      <h2><span class="n">8</span>カイ二乗検定（偶然のブレ か 偏りの可能性 か）</h2>
       <p class="hint">帰無仮説「全ての目・カテゴリは理論通りの確率で均等に出現する」に対する適合度検定です。p値が小さいほど、理論値からのズレが偶然では説明しにくいことを示します（あくまで統計的な目安であり、断定するものではありません）。</p>
       <div class="scroll-x">
         <table id="chiTable">
@@ -463,12 +475,14 @@
   };
 
   function classify(n){
-    if(n===0) return {color:'zero', parity:'zero', half:'zero', dozen:'zero'};
+    if(n===0) return {color:'zero', parity:'zero', half:'zero', dozen:'zero', column:'zero'};
     return {
       color: RED.has(n) ? 'red':'black',
       parity: n%2===0 ? 'even':'odd',
       half: n<=18 ? 'low':'high',
-      dozen: n<=12 ? '1st' : (n<=24 ? '2nd':'3rd')
+      dozen: n<=12 ? '1st' : (n<=24 ? '2nd':'3rd'),
+      // コラム(列)ベット: 数字表の縦の並び。1列目=1,4,7...34 / 2列目=2,5,8...35 / 3列目=3,6,9...36
+      column: n%3===1 ? 'col1' : (n%3===2 ? 'col2' : 'col3')
     };
   }
   function sectorOf(n){
@@ -631,6 +645,7 @@
   const historyBox = document.getElementById('history');
   const overviewBox = document.getElementById('overviewBox');
   const categoryTbody = document.querySelector('#categoryTable tbody');
+  const comboTbody = document.querySelector('#comboTable tbody');
   const numberBars = document.getElementById('numberBars');
   const wheelTbody = document.querySelector('#wheelTable tbody');
   const trendTbody = document.querySelector('#trendTable tbody');
@@ -650,6 +665,7 @@
     const parity = {odd:0, even:0, zero:0};
     const half = {low:0, high:0, zero:0};
     const dozen = {'1st':0,'2nd':0,'3rd':0, zero:0};
+    const column = {col1:0, col2:0, col3:0, zero:0};
     const numbers = new Array(37).fill(0);
     const sectors = {}; Object.keys(SECTORS).forEach(k=>sectors[k]=0);
 
@@ -660,10 +676,11 @@
       parity[c.parity]++;
       half[c.half]++;
       dozen[c.dozen]++;
+      column[c.column]++;
       const s = sectorOf(num);
       if(s) sectors[s]++;
     });
-    return {n, color, parity, half, dozen, numbers, sectors};
+    return {n, color, parity, half, dozen, column, numbers, sectors};
   }
 
   function renderOverview(stats){
@@ -695,7 +712,30 @@
     row('1st dozen (1-12)', stats.dozen['1st'], 12/37);
     row('2nd dozen (13-24)', stats.dozen['2nd'], 12/37);
     row('3rd dozen (25-36)', stats.dozen['3rd'], 12/37);
+    row('1列目 (1,4,7…34)', stats.column.col1, 12/37);
+    row('2列目 (2,5,8…35)', stats.column.col2, 12/37);
+    row('3列目 (3,6,9…36)', stats.column.col3, 12/37);
     categoryTbody.innerHTML = rows.join('');
+  }
+
+  function renderComboTable(stats){
+    const n = stats.n;
+    const theoP = 24/37; // ダズン/コラムのうち任意の2つ = 24個の数字
+    const rows = [
+      {label:'1st + 2nd dozen', count: stats.dozen['1st'] + stats.dozen['2nd']},
+      {label:'1st + 3rd dozen', count: stats.dozen['1st'] + stats.dozen['3rd']},
+      {label:'2nd + 3rd dozen', count: stats.dozen['2nd'] + stats.dozen['3rd']},
+      {label:'1列目 + 2列目', count: stats.column.col1 + stats.column.col2},
+      {label:'1列目 + 3列目', count: stats.column.col1 + stats.column.col3},
+      {label:'2列目 + 3列目', count: stats.column.col2 + stats.column.col3},
+    ];
+    let html = '';
+    rows.forEach(r=>{
+      const rate = n>0 ? r.count/n : 0;
+      const devPts = n>0 ? (rate-theoP)*100 : 0;
+      html += '<tr><td data-label="組み合わせ">'+r.label+'</td><td data-label="回数">'+r.count+'</td><td data-label="出現率">'+(n>0?pct(rate):'-')+'</td><td data-label="理論値">'+pct(theoP)+'</td>'+(n>0?devCell(devPts,'ズレ(pt)'):'<td data-label="ズレ(pt)">-</td>')+'</tr>';
+    });
+    comboTbody.innerHTML = html;
   }
 
   function renderNumberBars(stats){
@@ -755,6 +795,9 @@
       {label:'1st dozen', get:s=>s.dozen['1st'], theo:12/37},
       {label:'2nd dozen', get:s=>s.dozen['2nd'], theo:12/37},
       {label:'3rd dozen', get:s=>s.dozen['3rd'], theo:12/37},
+      {label:'1列目', get:s=>s.column.col1, theo:12/37},
+      {label:'2列目', get:s=>s.column.col2, theo:12/37},
+      {label:'3列目', get:s=>s.column.col3, theo:12/37},
     ];
 
     function cell(s, wsize, getter, label){
@@ -810,6 +853,7 @@
     addTest('奇偶（奇/偶/0）', [stats.parity.odd, stats.parity.even, stats.parity.zero], [18/37,18/37,1/37]);
     addTest('大小（1-18/19-36/0）', [stats.half.low, stats.half.high, stats.half.zero], [18/37,18/37,1/37]);
     addTest('ダズン（1st/2nd/3rd/0）', [stats.dozen['1st'],stats.dozen['2nd'],stats.dozen['3rd'],stats.dozen.zero], [12/37,12/37,12/37,1/37]);
+    addTest('コラム（1列目/2列目/3列目/0）', [stats.column.col1,stats.column.col2,stats.column.col3,stats.column.zero], [12/37,12/37,12/37,1/37]);
     addTest('ホイールエリア（3区分）', Object.keys(SECTORS).map(k=>stats.sectors[k]), Object.keys(SECTORS).map(k=>SECTORS[k].length/37));
 
     chiTbody.innerHTML = rows.join('');
@@ -832,6 +876,7 @@
     const stats = computeCategoryCounts(spins);
     renderOverview(stats);
     renderCategoryTable(stats);
+    renderComboTable(stats);
     renderNumberBars(stats);
     renderWheelTable(stats);
     renderTrendTable();
